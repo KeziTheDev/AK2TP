@@ -1,0 +1,365 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Project
+{
+    class VypocetKontrolniCifry
+    {
+
+
+        static void Main()
+        {
+
+        menu:
+
+            Console.Clear();                                                                    //Vyčistí konzoli
+            Console.WriteLine("Vyberte typ kódu podle čísla pro výpočet kontrolní cifry:");     //Vypsání menu do konzole
+            Console.WriteLine("1: EAN-13");
+            Console.WriteLine("2: Rodné číslo");
+            Console.WriteLine("3: Bankovní číslo účtu");
+            Console.WriteLine("4: IBAN");
+            Console.WriteLine("\nNapsáním slova \"exit\" se program ukončí");
+            Console.Write("\r\nNapište číslo: ");
+       
+            switch (Console.ReadLine())                                                         //switch který přesměruje chod kódu dle vybrané možnosti uživatele
+            {
+                case "1":
+                    {
+                        Console.Clear();
+                        goto ean13;
+                    }                                              
+                case "2":
+                    {
+                        Console.Clear();
+                        goto rodne_cislo;
+                    }
+                    
+                case "3":
+                    {
+                        Console.Clear();
+                        goto cisloUctu;
+                    }
+                    
+                case "4":
+                    {
+                        Console.Clear();
+                        goto iban;
+                    }
+                case "exit":
+                    {
+                        goto exit;
+                    }
+
+                default: 
+                    {
+                        goto menu;                                                              //Při zadání kteréhokoliv vstupu se menu resetuje
+                    }                    
+            }
+   
+            //Výpočet EAN-13 kontrolní cifry -------------------------------------------------------------------------------------------------------------------------------------
+        ean13:
+
+            string ean13;
+            int kontrolni_EAN;
+            int suma = 0;
+            int[] poleEan;
+            char[] formatEan;
+            bool formatKontrolaEan = true;
+
+
+            Console.WriteLine("Napište 12 čísel pro kód EAN-13");
+
+            do
+            {
+
+                if (!formatKontrolaEan) Console.WriteLine("Zadejte znovu:");            //Po neúspěšném zadání se hláška opakuje    
+                formatKontrolaEan = true;   
+                ean13 = Console.ReadLine();                                             //Vstup od uživatele v daném formátu
+                if (string.IsNullOrWhiteSpace(ean13))                                   //Kontrola vstupu, jestli uživatel stiskl enter nebo jen zadal mezery
+                {
+                    Console.WriteLine("Nic jste nezadal.");
+                    formatKontrolaEan = false;
+                    continue;
+                }
+
+                formatEan = ean13.ToCharArray();                                        //Vytvoření char pole formatEan[] 
+
+                if (ean13.Length != 12)                                                 //Kontrola délky vstupu od uživatele 
+                { 
+                    Console.WriteLine("Prosím zadejte 12 číslic.");
+                    formatKontrolaEan = false;
+                    continue;
+                }                
+                for (int i = 0; i < ean13.Length; i++)                                  //Smyčka která vybere každý charakter ze vstupu od uživatele
+                {                                                                       
+                    if (!Char.IsDigit(formatEan[i]))                                    //a kontroluje, jestli je číslo a když není tak se vypíše error a do-while loop se opakuje
+                    {
+                        Console.WriteLine("Kód obsahuje neplatné znaky.");
+                        formatKontrolaEan = false;
+                        break;
+                    }                
+                }                
+            } while (!formatKontrolaEan || ean13.Length != 12);
+            Console.Clear();
+
+
+            poleEan = ean13.Select(c => c - '0').ToArray();                             //Převedení vstupu uživatele ve stringu na int[] pole
+
+            for (int i = 0; i < poleEan.Length; i++)
+            {                
+                if (i % 2 != 0) poleEan[i] = poleEan[i] * 3;                            //Každé číslo v poli se vynásobí střídavě čísly 1(liché) a 3(sudé)
+                    
+                   else         poleEan[i] = poleEan[i] * 1;         
+                     
+            }
+            for (int i = 0; i < poleEan.Length; i++) suma += poleEan[i];                //smyčka pro součet všech vynásobených čísel v poli poleEan[]
+
+            suma %= 10;                                                                 //Součet se dá modulo 10 a od čísla 10 se odečte výsledek. Tím získáváme kontrolní cifru
+            suma = 10 - suma;
+            kontrolni_EAN = suma;
+
+            Console.WriteLine("Kontrolní cifra EAN-13 je {0}", kontrolni_EAN);          //Nakonec vypíšeme kontrolní cifru
+            Console.WriteLine("\nStiskni mezerník pro návrat do Menu");
+            while (Console.ReadKey(true).Key != ConsoleKey.Spacebar) ;                  //Smyčka, která se ukončí po stisknutí mezerníku od uživatele
+            goto menu;
+
+
+        //Výpočet kontrolní cifry Rodného čísla ----------------------------------------------------------------------------------------------------------------------------------
+        rodne_cislo:
+
+            string rodne_cislo;                                                                      
+            int[] poleRc;
+            int sumaLiche = 0;
+            int sumaSude = 0;
+            int kontrolni_RC;
+            char[] formatRc;
+            bool formatKontrolaRc = true;
+
+            Console.WriteLine("Napište prvních 9 čísel Rodného čísla bez lomítka: ");
+            do
+            {                              
+                if (!formatKontrolaRc) Console.WriteLine("Zadejte znovu:");            //Probíhá stejná kontrola vstupu jako u předchozího výpočtu
+                formatKontrolaRc = true;                
+                rodne_cislo = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(rodne_cislo))
+                {
+                    Console.WriteLine("Nic jste nezadal.");
+                    formatKontrolaRc = false;
+                    continue;
+                }
+                formatRc = rodne_cislo.ToCharArray();
+
+                if (rodne_cislo.Length != 9)
+                {
+                    Console.WriteLine("Prosím zadejte 9 číslic.");
+                    formatKontrolaRc = false;
+                    continue;
+                }
+                    
+
+                for (int i = 0; i < rodne_cislo.Length; i++)
+                {
+                    if (!Char.IsDigit(formatRc[i]))
+                    {
+                        Console.WriteLine("Kód obsahuje neplatné znaky.");
+                        formatKontrolaRc = false;
+                        break;
+                    }
+                }
+            } while (!formatKontrolaRc || rodne_cislo.Length != 9);
+            Console.Clear();
+
+            poleRc = rodne_cislo.Select(c => c - '0').ToArray();                    //Převedení vstupu uživatele ve stringu na int[] poleRc
+
+            for (int i = 0; i < poleRc.Length; i++)                                 //Smyčka ve které se vypočítají součty sudých a lichých pozic v poli poleRc[]
+            {
+                if (i % 2 == 0) sumaLiche += poleRc[i];
+  
+                else            sumaSude += poleRc[i];
+            }
+
+            kontrolni_RC = sumaLiche - sumaSude;                                    //Součty od sebe odečteme a dáme modulo 11, čímž nám výjde kontrolní cifra
+            kontrolni_RC %= 11;
+            Console.WriteLine("Kontrolní cifra RČ je {0}", kontrolni_RC);           //Nakonec vypíšeme kontrolní cifru
+            Console.WriteLine("\nStiskni mezerník pro návrat do Menu");
+            while (Console.ReadKey(true).Key != ConsoleKey.Spacebar) ;
+            goto menu;
+
+
+        //Výpočet kontrolní cifry bankovního Čísla účtu --------------------------------------------------------------------------------------------------------------------------
+        cisloUctu:
+
+            string cisloUctu;
+            int[] poleUc;
+            int kontrolni_UC;
+            int temp;
+            char[] formatUc;
+            bool formatKontrolaUc = true;
+
+            Console.WriteLine("Napište nanejvýš prvních 9 čísel bankovního čísla účtu včetně předčíslí bez pomlčky (kromě poslední číslice a kódu banky):");
+            do
+            {
+                if (!formatKontrolaUc) Console.WriteLine("Zadejte znovu:");         //Probíhá stejná kontrola až na podmínku, který umožní uživateli zadat 2-15 čísel
+                formatKontrolaUc = true;            
+                cisloUctu = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(cisloUctu))                           
+                {
+                    Console.WriteLine("Nic jste nezadal.");
+                    formatKontrolaUc = false;
+                    continue;
+                }
+                formatUc = cisloUctu.ToCharArray();
+
+                if (cisloUctu.Length >= 16 && cisloUctu.Length <= 1) 
+                { 
+                    Console.WriteLine("Číslo účtu přesahuje limit.");
+                    formatKontrolaUc = false;
+                    continue;
+                } 
+
+                for (int i = 0; i < cisloUctu.Length; i++)
+                {
+                    if (!Char.IsDigit(formatUc[i]))
+                    {
+                        Console.WriteLine("Kód obsahuje neplatné znaky.");
+                        formatKontrolaUc = false;
+                        break;
+                    }
+                }
+            } while (!formatKontrolaUc || cisloUctu.Length >= 16);
+            Console.Clear();
+            
+            poleUc = cisloUctu.Select(c => c - '0').ToArray();                      //Převedení vstupu uživatele ve stringu na int[] poleUc
+
+            int[] poleVahy = new int[poleUc.Length];                                //Vytvoření dvou polí o stejné velikosti jako vstup uživatele,  
+            int[] poleSuma = new int[poleUc.Length];                                //kdy každý prvek z poleVahy uchová vysledek ze vzorce 2^j % 11
+            int sumaUc = 0;
+
+            for (int j = 1; j <= poleVahy.Length; j++)
+            {                
+                int vypocetUc = 2;
+                int vysledekUc = 2;
+
+                    for (int k = 1; k < j; k++)                                     //Smyčka na výpočet exponenciálního čísla, podle proměnné 'j' se zvyšuje (2^1,2^2,2^3...)
+                    {
+
+                        vypocetUc *= 2;                                             
+                        vysledekUc = vypocetUc;
+                    
+                    }
+                vysledekUc %= 11;                                                   //Poté se dá modulo 11 a výsledek se uloží do PoleVahy od pozice 0
+                poleVahy[j-1] = vysledekUc;
+
+            }
+            for (int i = 0; i < poleVahy.Length; i++)                               //Ve smyčce se provede násobení polí poleVahy a poleUc, s tím že poleVahy začíná od posledního prvku
+            {                                                                       //Výsledek se uloží do pole poleSuma a poté se prvky sčítají do jednoho čísla, které se ukládá do sumaUC
+                temp = poleVahy[(poleVahy.Length-1)-i] * poleUc[i];
+                poleSuma[i] = temp;             
+                sumaUc += poleSuma[i];
+            }
+            sumaUc %= 11;                                                           //sumaUc se dá modulo 11 a od čísla 11 se odečte výsledek, čímž získáme kontrolní cifru
+            kontrolni_UC = 11 - sumaUc;
+
+            Console.WriteLine("Kontrolní číslo bankovního účtu je {0}", kontrolni_UC);         //Nakonec vypíšeme kontrolní cifru
+            Console.WriteLine("\nStiskni mezerník pro návrat do Menu");
+            while (Console.ReadKey(true).Key != ConsoleKey.Spacebar) ;
+            goto menu;
+
+
+        //Výpočet kontroly IBAN kódu  -------------------------------------------------------------------------------------------------------------------------------------------- 
+        iban:
+
+            long vypocet;
+            string iban;                                                     
+            string castIban;    
+            string overeni;
+            char[] formatIb;
+            bool formatKontrolaIb = true;
+            string[] pismena = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",     
+                                 "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+                                                                                                                       //Inicializace pole řetězce písmen a čísel které k nim patří
+            string[] cislaPismen = { "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
+                                      "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35" };
+
+
+
+            Console.WriteLine("Napište 24-místný kód IBAN bez mezer");          
+
+            do
+            {
+
+                if (!formatKontrolaIb) Console.WriteLine("Zadejte znovu:");         //Probíhá kontrola vstupu, jestli uživatel zadal přesně 24 znaků nebo jestli nezadal nic                   
+                formatKontrolaIb = true;
+                iban = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(iban))
+                {
+                    Console.WriteLine("Nic jste nezadal.");
+                    formatKontrolaIb = false;
+                    continue;
+                }
+
+                formatIb = iban.ToCharArray();
+
+                if (iban.Length != 24) 
+                { 
+                    Console.WriteLine("Prosím zadejte 24místný kód.");
+                    formatKontrolaIb = false;
+                    continue;
+                }
+
+
+
+                if (!char.IsLetter(formatIb[0]) || !char.IsLetter(formatIb[1]))     //Zde se kontroluje jestli první dva znaky, jsou písmena
+                {
+                    Console.WriteLine("Jen první 2 znaky musí obsahovat písmena.");
+                    formatKontrolaIb = false;
+                    continue;
+                    
+                }
+                for (int i = 0; i < iban.Length-2; i++)                             //Zde se kontroluje zbytek vstupu, kromě prvních dvou znaků jestli se jedná o čísla
+                {
+                    if (!char.IsDigit(formatIb[i+2]))
+                    {
+                        Console.WriteLine("Kód obsahuje neplatné znaky.");
+                        formatKontrolaIb = false;
+                        break;
+                    }
+                }
+            } while (!formatKontrolaIb || iban.Length != 24);
+            Console.Clear();
+
+
+            overeni = iban.Substring(0,2);                                          //Vytvoření řetězce, které obsahuje jen první 2 znaky ze vstupu uživatele
+            overeni = overeni.ToUpper();                                            //Převod řetězce na velké znaky
+            iban = iban[4..];                                                       //Zbytek vstupu uživatele bez prvních 4 znaků (první 2 písmena a dvouciferné kontrolní číslo) 
+
+            for (int i = 0; i < pismena.Length; i++)                                //Smyčka zjišťuje, které písmeno z pole pismena[] je v prvních dvou znaků vstupu 
+            {                                                                       //a nahradí dané písmeno za dvouciferné číslo z pole cislaPismen[] 
+                if (overeni.Contains(pismena[i])) 
+                    overeni = overeni.Replace(pismena[i], cislaPismen[i]);
+            }
+            overeni = overeni.Insert(overeni.Length, "00");                         //Přičtou se dvě nuly k řetězci oveření
+            iban = iban.Insert(iban.Length, overeni);                               //Celý řetězec overení vložíme nakonec vstupu a tím máme připravený formát na výpočet
+
+            castIban = iban.Substring(0,18);                                        //Celý řetězec se musí rozdělit na dvě části (první 18 znaků, druhá 6 znaků)  
+            iban = iban[castIban.Length..];
+            vypocet = long.Parse(castIban) % 97;                                    //První část převedeme na celé long číslo a dáme modulo 97
+            iban = iban.Insert(0, vypocet.ToString());                              //Poté výsledek přičteme k druhé části na začátek a uděláme stejný krok
+            vypocet = 98 - (long.Parse(iban) % 97);                                 //Poté od čísla 97 odečteme výsledek z druhé části a máme vypočítané dvouciferné kontrolní číslo
+                                                                                    //Dvouciferné kontrolní číslo je umístěné na 3. a 4. pozici z originální řetězce uživatele
+
+            Console.WriteLine("Kontrolní číslo IBAN je {0}", vypocet);              //Nakonec vypíšeme kontrolní cifru
+            Console.WriteLine("\nStiskni mezerník pro návrat do Menu");
+            while (Console.ReadKey(true).Key != ConsoleKey.Spacebar);
+            goto menu;
+
+        exit:
+            Console.Clear();
+            Console.WriteLine("Program ukončen.");                                  //Oznámení o ukončení programu
+
+        }
+    }
+}
